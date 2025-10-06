@@ -42,6 +42,7 @@ python run_chat.py --model_name Qwen/Qwen3-8B --method swir --max_switch_count 2
 ```
 
 * Increase `--max_switch_count` to enable more thinking rounds (default is 2).
+* Modify `--model_name` to try different reasoning LLMs.
 
 ```bash
 Commands:
@@ -68,4 +69,5 @@ python merge.py --model_name Qwen/Qwen3-8B --dataset_name gsm8k --max_new_tokens
 * Increase ``--nproc_per_node`` to enable faster evaluation on multiple GPUs. 
 * Modify ``--model_name`` and ``--dataset_name`` for evaluation with different models and datasets.
 * Please check [run.sh](./run.sh) for more examples.
+
 
