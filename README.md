@@ -13,6 +13,8 @@
     <a href="">Interactive Chat</a> / <a href="">Benchmark Evaluation</a>
 </p>
 
+![demo](https://github.com/user-attachments/assets/6436d597-b5cd-46a6-b9f4-a35a76037750)
+
 ## ⚙️ Getting Started
 
 1. Clone
@@ -31,5 +33,6 @@
 ## 💻 Run Interactive Chat
 
 ## 📈 Benchmark Evaluation
+
 
 ## 💬 Acknowledgments
