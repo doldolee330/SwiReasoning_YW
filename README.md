@@ -15,9 +15,10 @@
 
 
 ## 👀 TL;DR
-SwiReasoning</span> is a <strong>training-free</strong> method for reasoning LLMs that dynamically switches between explicit and latent thinking, with a switch count control mechanism to suppress overthinking.
+![swir](assets/method.png)
+SwiReasoning is a <strong>training-free</strong> method for reasoning LLMs that dynamically switches between explicit and latent thinking.
 
-![demo](https://github.com/user-attachments/assets/2c917cfe-8b10-4af4-91b2-1a9c45228e1c)
+https://github.com/user-attachments/assets/2c917cfe-8b10-4af4-91b2-1a9c45228e1c
 
 ## ⚙️ Getting Started
 
