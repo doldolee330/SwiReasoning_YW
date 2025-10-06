@@ -53,12 +53,19 @@ Commands:
 
 ## 📈 Evaluation
 
-### On a single GPU
 ```bash
+# Evaluate without switch count control
 torchrun --nproc_per_node 1 --nnodes 1 --node_rank 0 --master_port $((RANDOM + 20000)) run.py --model_name Qwen/Qwen3-1.7B \
     --dataset_name gsm8k --batch_size 512 --max_new_tokens 32768 --method swir --alpha 0.6
 python merge.py --model_name Qwen/Qwen3-1.7B --dataset_name gsm8k --max_new_tokens 32768 --method swir
+
+# Evaluate with switch count control
+torchrun --nproc_per_node 1 --nnodes 1 --node_rank 0 --master_port $((RANDOM + 20000)) run.py --model_name Qwen/Qwen3-8B \
+    --dataset_name gsm8k --batch_size 256 --max_new_tokens 32768 --method swir --alpha 0.5 --max_switch_count 2
+python merge.py --model_name Qwen/Qwen3-8B --dataset_name gsm8k --max_new_tokens 32768 --method swir
+
 ```
 * Increase ``--nproc_per_node`` to enable faster evaluation on multiple GPUs. 
 * Modify ``--model_name`` and ``--dataset_name`` for evaluation with different models and datasets.
 * Please check [run.sh](./run.sh) for more examples.
+
