@@ -13,7 +13,7 @@
     <a href="">Interactive Chat</a> / <a href="">Benchmark Evaluation</a>
 </p>
 
-![demo](https://github.com/user-attachments/assets/6436d597-b5cd-46a6-b9f4-a35a76037750)
+![demo](https://github.com/user-attachments/assets/2c917cfe-8b10-4af4-91b2-1a9c45228e1c)
 
 ## ⚙️ Getting Started
 
@@ -36,3 +36,4 @@
 
 
 ## 💬 Acknowledgments
+
