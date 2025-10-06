@@ -10,8 +10,12 @@
     <a href="">
         <img alt="Webiste" src="https://img.shields.io/badge/website-link-4285F4?logo=googleearth" />
     </a><br>
-    <a href="">Interactive Chat</a> / <a href="">Benchmark Evaluation</a>
+    <a href="">Interactive Chat</a> / <a href="">Evaluation</a>
 </p>
+
+
+## 👀 TL;DR
+SwiReasoning</span> is a <strong>training-free</strong> method for reasoning LLMs that dynamically switches between explicit and latent thinking, with a switch count control mechanism to suppress overthinking.
 
 ![demo](https://github.com/user-attachments/assets/2c917cfe-8b10-4af4-91b2-1a9c45228e1c)
 
@@ -30,10 +34,11 @@
     pip install -r requirements.txt
     ```
 
-## 💻 Run Interactive Chat
+## 💻 Interactive Chat
 
-## 📈 Benchmark Evaluation
+## 📈 Evaluation
 
 
 ## 💬 Acknowledgments
+
 
