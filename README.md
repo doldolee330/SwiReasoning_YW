@@ -5,16 +5,16 @@
 
 <p align="center">
     <a href="">
-        <img alt="ArXiv" src="https://img.shields.io/badge/arXiv-2507.14204-B31B1B?logo=arxiv" />
+        <img alt="ArXiv" src="https://img.shields.io/badge/arXiv-xxxx.xxxxx-B31B1B?logo=arxiv" />
     </a>
     <a href="">
-        <img alt="Webiste" src="https://img.shields.io/badge/website-link-4285F4?logo=googleearth" />
+        <img alt="Website" src="https://img.shields.io/badge/website-555555?logo=googlechrome" />
     </a><br>
 </p>
 
 
 ## 👀 TL;DR
-SwiReasoning is a training-free method for Pareto-superior reasoning LLMs that dynamically switches between explicit and latent thinking, with a switch count control mechanism to suppress overthinking.
+SwiReasoning is a *training-free* method for Pareto-superior reasoning LLMs that dynamically switches between explicit and latent thinking, with a switch count control mechanism to suppress overthinking.
 
 ![swir](assets/method.png)
 
@@ -41,8 +41,8 @@ pip install -r requirements.txt
 python run_chat.py --model_name Qwen/Qwen3-8B --method swir --max_switch_count 2
 ```
 
-* Increase `--max_switch_count` to allow more thinking rounds (default: 2).
 * Modify `--model_name` to try different reasoning LLMs.
+* Increase `--max_switch_count` to allow more thinking rounds (default: 2).
 
 ```bash
 Commands:
@@ -69,6 +69,7 @@ python merge.py --model_name Qwen/Qwen3-8B --dataset_name gsm8k --max_new_tokens
 * Increase ``--nproc_per_node`` to enable faster evaluation on multiple GPUs. 
 * Modify ``--model_name`` and ``--dataset_name`` for evaluation with different models and datasets.
 * Please check [run.sh](./run.sh) for more examples.
+
 
 
 
