@@ -4,10 +4,10 @@
 </div>
 
 <p align="center">
-    <a href="">
-        <img alt="ArXiv" src="https://img.shields.io/badge/arXiv-xxxx.xxxxx-B31B1B?logo=arxiv" />
+    <a href="https://arxiv.org/pdf/2510.05069">
+        <img alt="ArXiv" src="https://img.shields.io/badge/arXiv-2510.05069-B31B1B?logo=arxiv" />
     </a>
-    <a href="">
+    <a href="https://swireasoning.github.io/">
         <img alt="Website" src="https://img.shields.io/badge/website-555555?logo=googlechrome" />
     </a><br>
 </p>
@@ -70,6 +70,17 @@ python merge.py --model_name Qwen/Qwen3-8B --dataset_name gsm8k --max_new_tokens
 * Modify ``--model_name`` and ``--dataset_name`` for evaluation with different models and datasets.
 * Please check [run.sh](./run.sh) for more examples.
 
-
+## ✨ BibTeX
+```bash
+@misc{shi2025swireasoningswitchthinkinglatentexplicit,
+      title={SwiReasoning: Switch-Thinking in Latent and Explicit for Pareto-Superior Reasoning LLMs}, 
+      author={Dachuan Shi and Abedelkadir Asi and Keying Li and Xiangchi Yuan and Leyan Pan and Wenke Lee and Wen Xiao},
+      year={2025},
+      eprint={2510.05069},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2510.05069}, 
+}
+```
 
 
