@@ -16,7 +16,7 @@
 ## 👀 TL;DR
 SwiReasoning is a *training-free* method for Pareto-superior reasoning LLMs that dynamically switches between explicit and latent thinking, with a switch count control mechanism to suppress overthinking.
 
-![swir](assets/method.png)
+![swir](assets/swir.png)
 
 https://github.com/user-attachments/assets/2c917cfe-8b10-4af4-91b2-1a9c45228e1c
 
