@@ -18,7 +18,9 @@ SwiReasoning is a *training-free* method for Pareto-superior reasoning LLMs that
 
 ![swir](assets/swir.png)
 
-https://github.com/user-attachments/assets/2c917cfe-8b10-4af4-91b2-1a9c45228e1c
+https://github.com/user-attachments/assets/6b18911c-efe4-47fd-8a00-3cd9ae1eb010
+
+Comparison of solving the same question with the same reasoning LLM (6s vs. 1min).
 
 ## ⚙️ Getting Started
 
@@ -82,5 +84,6 @@ python merge.py --model_name Qwen/Qwen3-8B --dataset_name gsm8k --max_new_tokens
       url={https://arxiv.org/abs/2510.05069}, 
 }
 ```
+
 
 
