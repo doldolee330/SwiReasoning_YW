@@ -72,6 +72,10 @@ python merge.py --model_name Qwen/Qwen3-8B --dataset_name gsm8k --max_new_tokens
 * Modify ``--model_name`` and ``--dataset_name`` for evaluation with different models and datasets.
 * Please check [run.sh](./run.sh) for more examples.
 
+## 💬 Acknowledgments
+
+We thank the contributors of open-source projects [Transformers](https://github.com/huggingface/transformers), [Qwen3](https://github.com/QwenLM/Qwen3), and [Soft-Thinking](https://github.com/eric-ai-lab/Soft-Thinking).
+
 ## ✨ BibTeX
 ```bash
 @misc{shi2025swireasoningswitchthinkinglatentexplicit,
@@ -84,6 +88,7 @@ python merge.py --model_name Qwen/Qwen3-8B --dataset_name gsm8k --max_new_tokens
       url={https://arxiv.org/abs/2510.05069}, 
 }
 ```
+
 
 
 
