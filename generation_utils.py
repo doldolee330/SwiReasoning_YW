@@ -342,3 +342,191 @@ def generate_swir(model, tokenizer, **kwargs):
     for i, ids in enumerate(all_generated):
         out[i, :len(ids)] = torch.tensor(ids, dtype=torch.long, device=device)
     return out
+
+def generate_c2f(model, tokenizer, **kwargs):
+
+    # ---- model inputs ----
+    input_ids      = kwargs.pop("input_ids")
+    attention_mask = kwargs.pop("attention_mask")
+
+    # ---- generation kwargs ----
+    temperature     = kwargs.get("temperature", 1.0)
+    top_p           = kwargs.get("top_p", 1.0)
+    top_k           = kwargs.get("top_k", 0)
+    min_p           = kwargs.get("min_p", 0)
+    max_new_tokens  = kwargs.get("max_new_tokens", 32768)
+    do_sample       = kwargs.get("do_sample", True)
+
+    # ---- SWIR kwargs ----
+    alpha_0                = kwargs.pop("alpha_0", 1.0)
+    beta_0                 = kwargs.pop("beta_0", 0.7)
+    window_size            = kwargs.pop("window_size", 512)
+    thinking_token_id      = kwargs.pop("thinking_token_id", None)
+    end_thinking_token_id  = kwargs.pop("end_thinking_token_id", None)
+    max_switch_count       = kwargs.pop("max_switch_count", None)
+    math_ids_tensor        = kwargs.pop("math_ids_tensor", None)
+
+    # ---- C2F kwargs (NEW) ----
+    c2f_start_ratio = kwargs.pop("c2f_start_ratio", 0.1)
+    c2f_end_ratio   = kwargs.pop("c2f_end_ratio", 1.0)
+    c2f_schedule    = kwargs.pop("c2f_schedule", "linear")
+
+    # ============================================
+
+    batch_size, device = input_ids.shape[0], input_ids.device
+    E = model.get_input_embeddings().weight  # [V, d]
+    d = E.shape[1]
+
+    if thinking_token_id is None or end_thinking_token_id is None:
+        thinking_token_id = tokenizer.convert_tokens_to_ids("<think>")
+        end_thinking_token_id = tokenizer.convert_tokens_to_ids("</think>")
+
+    start_thinking_emb = E[thinking_token_id]
+    end_thinking_emb   = E[end_thinking_token_id]
+
+    past_key_values = None
+
+    all_generated = [input_ids[i].clone().tolist() for i in range(batch_size)]
+    unfinished_idx = list(range(batch_size))
+
+    mode = torch.zeros(batch_size, dtype=torch.long, device=device)  # 0: soft, 1: normal
+    mode_stay_steps = torch.zeros(batch_size, dtype=torch.long, device=device)
+    locked_normal_mask = torch.zeros(batch_size, dtype=torch.bool, device=device)
+
+    for step in range(max_new_tokens):
+        cur_batch = attention_mask.shape[0]
+        if cur_batch == 0:
+            break
+
+        # ----- model forward -----
+        if past_key_values is None:
+            model_inputs = {
+                "input_ids": input_ids,
+                "attention_mask": attention_mask,
+            }
+        else:
+            attention_mask_new = torch.ones((cur_batch, 1), device=device)
+            attention_mask = torch.cat([attention_mask, attention_mask_new], dim=1)
+            model_inputs = {
+                "inputs_embeds": last_emb.unsqueeze(1),
+                "attention_mask": attention_mask,
+                "past_key_values": past_key_values,
+            }
+
+        with torch.no_grad():
+            outputs = model(**model_inputs, use_cache=True)
+
+        past_key_values = outputs.past_key_values
+
+        # ----- logits & probs -----
+        logits_original = outputs.logits[:, -1, :]
+        probs_original  = F.softmax(logits_original, dim=-1)
+
+        logits = logits_original / temperature
+        logits = apply_sampling_filter(logits, top_k=top_k, top_p=top_p, min_p=min_p)
+        probs  = F.softmax(logits, dim=-1)
+
+        next_tokens = (
+            torch.multinomial(probs, 1).squeeze(-1)
+            if do_sample else torch.argmax(probs, dim=-1)
+        )
+
+        # ----- entropy-based mode switch (same as SWIR) -----
+        cur_entropy = -(probs_original * probs_original.clamp_min(1e-12).log()).sum(dim=-1)
+        if step == 0:
+            cur_ref_entropy = cur_entropy.clone()
+        else:
+            mode_stay_steps += 1
+            allow_switch = (mode_stay_steps >= window_size)
+            to_normal = (mode == 0) & (cur_entropy < cur_ref_entropy)
+            to_soft   = (mode == 1) & (cur_entropy > cur_ref_entropy) & allow_switch & (~locked_normal_mask)
+
+            mode[to_normal] = 1
+            mode[to_soft]   = 0
+            mode_stay_steps[to_normal | to_soft] = 0
+            cur_ref_entropy[to_normal | to_soft] = cur_entropy[to_normal | to_soft]
+
+        is_normal = (mode == 1) | locked_normal_mask
+        if math_ids_tensor is not None:
+            is_math = (next_tokens.unsqueeze(-1) == math_ids_tensor).any(dim=-1)
+            is_normal[is_math] = True
+
+        is_soft = ~is_normal
+
+        # =====================================================
+        # 🔥 C2F LATENT CORE 🔥
+        # =====================================================
+
+        # 1) full soft embedding
+        soft_full = torch.matmul(probs_original, E)  # [B, d]
+
+        # 2) compute active dimension k(step)
+        progress = step / max_new_tokens
+        if c2f_schedule == "linear":
+            ratio = c2f_start_ratio + (c2f_end_ratio - c2f_start_ratio) * progress
+        elif c2f_schedule == "cosine":
+            ratio = c2f_start_ratio + (c2f_end_ratio - c2f_start_ratio) * (1 - np.cos(np.pi * progress)) / 2
+        else:
+            raise ValueError(f"Unknown c2f_schedule: {c2f_schedule}")
+
+        k = int(d * ratio)
+        k = max(1, min(k, d))
+
+        # 3) dimension mask
+        mask = torch.zeros(d, device=device)
+        mask[:k] = 1.0
+
+        soft_emb = soft_full * mask  # coarse → fine latent
+
+        # ----- normal embedding -----
+        normal_emb = E[next_tokens]
+
+        # ----- thinking token bias (same as SWIR) -----
+        alpha = alpha_0 + (1 - alpha_0) * progress
+        beta  = beta_0  + (1 - beta_0)  * progress
+
+        if step > 0:
+            soft_emb = torch.where(
+                to_soft[:, None],
+                alpha * soft_emb + (1 - alpha) * start_thinking_emb,
+                soft_emb
+            )
+            normal_emb = torch.where(
+                to_normal[:, None],
+                beta * soft_emb + (1 - beta) * end_thinking_emb,
+                normal_emb
+            )
+
+        last_emb = torch.where(is_soft[:, None], soft_emb, normal_emb)
+        last_emb = last_emb.to(E.dtype)
+
+        # ----- record token (unchanged) -----
+        for bi, orig in enumerate(unfinished_idx):
+            all_generated[orig].append(next_tokens[bi].item())
+
+        # ----- finish condition -----
+        if tokenizer.eos_token_id is not None:
+            finished = (next_tokens == tokenizer.eos_token_id)
+        else:
+            finished = torch.zeros(cur_batch, dtype=torch.bool, device=device)
+
+        keep_idx = (~finished).nonzero(as_tuple=False).squeeze(-1)
+        unfinished_idx = [unfinished_idx[i] for i in keep_idx.tolist()]
+        if len(unfinished_idx) == 0:
+            break
+
+        last_emb = last_emb[keep_idx]
+        attention_mask = attention_mask[keep_idx]
+        mode = mode[keep_idx]
+        mode_stay_steps = mode_stay_steps[keep_idx]
+        cur_ref_entropy = cur_ref_entropy[keep_idx]
+        locked_normal_mask = locked_normal_mask[keep_idx]
+
+        if hasattr(past_key_values, "batch_select_indices"):
+            past_key_values.batch_select_indices(keep_idx)
+
+    maxlen = max(len(g) for g in all_generated)
+    out = torch.full((batch_size, maxlen), tokenizer.pad_token_id or 0, device=device)
+    for i, ids in enumerate(all_generated):
+        out[i, :len(ids)] = torch.tensor(ids, device=device)
+    return out
