@@ -71,6 +71,6 @@ if __name__ == "__main__":
     parser.add_argument('--dataset_name', type=str, default="gsm8k")
     parser.add_argument('--max_new_tokens', type=int, default=38912)
     parser.add_argument('--seed', type=int, default=42)
-    parser.add_argument("--method", type=str, default="swir", choices=["swir", "cot", "cot_greedy"])
+    parser.add_argument("--method", type=str, default="swir", choices=["swir", "cot", "cot_greedy", "c2f"])
     args = parser.parse_args()
     main(args)
